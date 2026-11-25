@@ -34,6 +34,9 @@
   #splash .bird img{position:absolute;inset:0;width:100%;height:100%;display:block}
   #splash .bird .wl{clip-path:polygon(0 0,37.2% 0,37.2% 24.3%,30.8% 32.4%,28.5% 50.7%,0 50.7%);transform-origin:37.2% 28.7%;animation:flapL .26s ease-in-out 6 both}
   #splash .bird .wr{clip-path:polygon(57.6% 0,100% 0,100% 50.7%,73.3% 50.7%,73.3% 33.8%,57.6% 24.3%);transform-origin:57.6% 28.7%;animation:flapR .26s ease-in-out 6 both}
+  /* 翼の付け根（動かない）：翼が動いたときにできるすき間を、元の絵で埋める */
+  #splash .bird .wlb{clip-path:polygon(22.7% 0,37.2% 0,37.2% 24.3%,30.8% 32.4%,28.5% 50.7%,14% 50.7%,16.3% 32.4%,22.7% 24.3%)}
+  #splash .bird .wrb{clip-path:polygon(57.6% 0,72.1% 0,72.1% 24.3%,87.8% 33.8%,87.8% 50.7%,73.3% 50.7%,73.3% 33.8%,57.6% 24.3%)}
   #splash .bird .bd{clip-path:polygon(37.2% 0,57.6% 0,57.6% 24.3%,73.3% 33.8%,73.3% 50.7%,100% 50.7%,100% 100%,0 100%,0 50.7%,28.5% 50.7%,30.8% 32.4%,37.2% 24.3%)}
   #splash .shadow{width:110px;height:10px;margin-top:-8px;border-radius:50%;background:rgba(0,0,0,.28);animation:shadow 1.6s cubic-bezier(.25,.8,.3,1) both}
   #splash .name{font-size:28px;font-weight:800;letter-spacing:.14em;animation:rise .7s 1.25s cubic-bezier(.2,.8,.2,1) both}
@@ -41,8 +44,8 @@
   #splash .dots{display:flex;gap:7px;animation:rise .6s 1.5s both}
   #splash .dots i{width:7px;height:7px;border-radius:50%;background:#C7A46C;opacity:.35;animation:dot 1.2s ease-in-out infinite}
   #splash .dots i:nth-child(2){animation-delay:.15s} #splash .dots i:nth-child(3){animation-delay:.3s}
-  @keyframes flapL{0%,100%{transform:none}30%{transform:rotate(24deg) scaleY(.9)}70%{transform:rotate(-16deg)}}
-  @keyframes flapR{0%,100%{transform:none}30%{transform:rotate(-24deg) scaleY(.9)}70%{transform:rotate(16deg)}}
+  @keyframes flapL{0%,100%{transform:none}30%{transform:rotate(20deg) scaleY(.92)}70%{transform:rotate(-14deg)}}
+  @keyframes flapR{0%,100%{transform:none}30%{transform:rotate(-20deg) scaleY(.92)}70%{transform:rotate(14deg)}}
   @keyframes fly{
     0%{transform:translate(48vw,-46vh) rotate(-14deg) scale(.55);opacity:0}
     12%{opacity:1}
@@ -58,7 +61,7 @@
 </head>
 <body>
 <div id="splash" aria-hidden="true">
-  <div class="bird"><img class="bd" src="crest-thin.png" alt="百舌鳥FC"><img class="wl" src="crest-thin.png" alt=""><img class="wr" src="crest-thin.png" alt=""></div>
+  <div class="bird"><img class="bd" src="crest-thin.png" alt="百舌鳥FC"><img class="wlb" src="crest-thin.png" alt=""><img class="wrb" src="crest-thin.png" alt=""><img class="wl" src="crest-thin.png" alt=""><img class="wr" src="crest-thin.png" alt=""></div>
   <div class="shadow"></div>
   <div class="name">百舌鳥<b>FC</b></div>
   <div class="dots"><i></i><i></i><i></i></div>
