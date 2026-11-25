@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#F2F0E7">
+<meta name="color-scheme" content="light only">
+<title>コーチ運営ボード</title>
+<style>
+  /* 運営用の受け口ページ：運営画面（Google Apps Script・Googleアカウントでログイン）を埋め込み、
+     Google の「このアプリケーションは…」の表示を出さないためのページ（2026/11/25） */
+  html,body{margin:0;height:100%;background:#F2F0E7;color:#13221F;
+    font-family:"Hiragino Sans","Yu Gothic",sans-serif}
+  iframe{position:fixed;inset:0;width:100%;height:100%;height:100dvh;border:0;display:block}
+  #help{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);display:none;
+    background:#163A33;color:#F5F3EA;border-radius:14px;padding:12px 16px;font-size:14px;line-height:1.7;
+    box-shadow:0 8px 24px rgba(19,34,31,.25);max-width:92vw;z-index:2}
+  #help a{color:#C7A46C;font-weight:700}
+  #help button{margin-left:8px;border:0;background:transparent;color:#F5F3EA;font-size:14px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="help" role="status">
+  表示されないときは、Google にログインしていないか、ブラウザが埋め込みを止めています。
+  <a id="direct" href="#" target="_top" rel="noopener">運営画面を直接開く</a>
+  <button type="button" onclick="this.parentNode.style.display='none'">閉じる</button>
+</div>
+<script>
+"use strict";
+// 運営用ウェブアプリのURL（デプロイ「運営用」の /exec）
+const EXEC = "https://script.google.com/macros/s/AKfycbxioZ_2Bb402kC94QHbom38t9IjGCeAMWlTKPHkJ1Og0GDVukcvbv8U2YXreJXbgFFA/exec";
+
+(function () {
+  const help = document.getElementById("help");
+  document.getElementById("direct").href = EXEC;
+  if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(EXEC)) { help.style.display = "block"; return; }
+  const fr = document.createElement("iframe");
+  fr.src = EXEC;
+  fr.title = "コーチ運営ボード";
+  fr.allow = "clipboard-write; fullscreen";
+  document.body.appendChild(fr);
+  // 運営画面が読み込まれると合図（mozu-admin-ready）が届く。20秒たっても届かなければ案内を出す
+  let ready = false;
+  window.addEventListener("message", e => {
+    if (e.data === "mozu-admin-ready" && (e.origin === "null" || /^https:\/\/([a-z0-9-]+\.)*googleusercontent\.com$/.test(e.origin))) { ready = true; help.style.display = "none"; }
+  });
+  setTimeout(() => { if (!ready) help.style.display = "block"; }, 20000);
+})();
+</script>
+</body>
+</html>
