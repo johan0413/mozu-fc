@@ -34,7 +34,8 @@ const EXEC = "https://script.google.com/macros/s/AKfycbxioZ_2Bb402kC94QHbom38t9I
 
 (function () {
   const help = document.getElementById("help");
-  document.getElementById("direct").href = EXEC;
+  // 直接開くときは ?direct=1 を付ける（付けないと運営画面がこのページへ戻してしまう）
+  document.getElementById("direct").href = EXEC + "?direct=1";
   if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(EXEC)) { help.style.display = "block"; return; }
   const fr = document.createElement("iframe");
   fr.src = EXEC;
