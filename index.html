@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#F2F0E7">
+<meta name="color-scheme" content="light only">
+<title>百舌鳥FC</title>
+<style>
+  /* 受け口ページ：コーチ用・保護者用ページ（Google Apps Script）を画面いっぱいに埋め込み、
+     Google の「このアプリケーションは…」の表示を出さないためのページ（2026/11/25） */
+  html,body{margin:0;height:100%;background:#F2F0E7;color:#13221F;
+    font-family:"Hiragino Sans","Yu Gothic",sans-serif}
+  iframe{position:fixed;inset:0;width:100%;height:100%;height:100dvh;border:0;display:block}
+  .msg{max-width:420px;margin:0 auto;padding:80px 24px;line-height:1.8;text-align:center}
+  .msg b{display:block;font-size:18px;margin-bottom:8px}
+</style>
+</head>
+<body>
+<script>
+"use strict";
+// コーチ用ウェブアプリのURL（デプロイ「コーチ用」の /exec。保護者用も同じURL）
+const EXEC = "https://script.google.com/macros/s/AKfycbw6OtUz0_V8m0GPFOxDcXW4wJPEElu6BhcdzCUdAUHnVh8YWm5kNILUFV8xGFXfoXCh/exec";
+
+(function () {
+  const q = new URLSearchParams(location.search);
+  // 合言葉は英数字・-・_ だけを通す（それ以外は付け足さない）
+  const clean = v => String(v || "").replace(/[^A-Za-z0-9_-]/g, "");
+  const k = clean(q.get("k")), f = clean(q.get("f"));
+  if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(EXEC) || (!k && !f)) {
+    document.body.innerHTML = '<div class="msg"><b>ページを開けませんでした</b>' +
+      'お送りした専用リンクから開いてください。<br>うまく開けないときは運営までご連絡ください。</div>';
+    return;
+  }
+  const fr = document.createElement("iframe");
+  fr.src = EXEC + (f ? "?f=" + encodeURIComponent(f) : "?k=" + encodeURIComponent(k));
+  fr.title = f ? "保護者用ページ" : "コーチ用ページ";
+  fr.allow = "clipboard-write; fullscreen";
+  fr.referrerPolicy = "no-referrer";
+  document.title = f ? "百舌鳥FC 保護者用ページ" : "百舌鳥FC コーチ用ページ";
+  document.body.appendChild(fr);
+})();
+</script>
+</body>
+</html>
