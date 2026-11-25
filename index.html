@@ -2,11 +2,19 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#F2F0E7">
 <meta name="color-scheme" content="light only">
+<!-- ホーム画面に追加でアプリのように開く（2026/11/25）。start_url は書かない＝開いたURL（専用リンク）のまま登録される -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="百舌鳥FC">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>百舌鳥FC</title>
 <style>
   /* 受け口ページ：コーチ用・保護者用ページ（Google Apps Script）を画面いっぱいに埋め込み、
@@ -16,24 +24,70 @@
   iframe{position:fixed;inset:0;width:100%;height:100%;height:100dvh;border:0;display:block}
   .msg{max-width:420px;margin:0 auto;padding:80px 24px;line-height:1.8;text-align:center}
   .msg b{display:block;font-size:18px;margin-bottom:8px}
+  /* 起動画面：Google の読み込みが終わるまで表示（中身から mozu-ready が届いたら消す） */
+  #splash{position:fixed;inset:0;z-index:5;background:#163A33;color:#F5F3EA;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:18px;transition:opacity .45s ease,transform .45s ease}
+  #splash.out{opacity:0;transform:scale(1.04);pointer-events:none}
+  /* ボールが上から落ちてきて、ぽん・ぽん・ぽんと弾んで止まる */
+  #splash .ball{width:58px;height:58px;color:#163A33;animation:bounce 1.5s linear both}
+  #splash .shadow{width:46px;height:8px;margin-top:-12px;border-radius:50%;background:rgba(0,0,0,.28);animation:shadow 1.5s linear both}
+  #splash .ball svg{width:100%;height:100%}
+  #splash .name{font-size:28px;font-weight:800;letter-spacing:.14em;animation:rise .7s .9s cubic-bezier(.2,.8,.2,1) both}
+  #splash .name b{color:#C7A46C;font-weight:800;margin-left:.3em}
+  #splash .dots{display:flex;gap:7px;animation:rise .6s 1.2s both}
+  #splash .dots i{width:7px;height:7px;border-radius:50%;background:#C7A46C;opacity:.35;animation:dot 1.2s ease-in-out infinite}
+  #splash .dots i:nth-child(2){animation-delay:.15s} #splash .dots i:nth-child(3){animation-delay:.3s}
+  @keyframes bounce{
+    0%{transform:translateY(-46vh) rotate(-40deg);animation-timing-function:cubic-bezier(.55,0,1,.45)}
+    30%{transform:translateY(0) rotate(0) scale(1.14,.84);animation-timing-function:cubic-bezier(0,.55,.45,1)}
+    47%{transform:translateY(-110px) rotate(70deg);animation-timing-function:cubic-bezier(.55,0,1,.45)}
+    63%{transform:translateY(0) rotate(120deg) scale(1.09,.9);animation-timing-function:cubic-bezier(0,.55,.45,1)}
+    74%{transform:translateY(-44px) rotate(150deg);animation-timing-function:cubic-bezier(.55,0,1,.45)}
+    84%{transform:translateY(0) rotate(170deg) scale(1.05,.95);animation-timing-function:cubic-bezier(0,.55,.45,1)}
+    91%{transform:translateY(-14px) rotate(178deg);animation-timing-function:cubic-bezier(.55,0,1,.45)}
+    97%{transform:translateY(0) rotate(180deg) scale(1.02,.98)}
+    100%{transform:translateY(0) rotate(180deg)}}
+  @keyframes shadow{0%{transform:scale(.2);opacity:0}30%,63%,84%,97%,100%{transform:scale(1);opacity:1}47%{transform:scale(.55);opacity:.5}74%{transform:scale(.75);opacity:.7}91%{transform:scale(.92);opacity:.9}}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes dot{0%,100%{opacity:.3;transform:none}50%{opacity:1;transform:translateY(-4px)}}
+  @media (prefers-reduced-motion:reduce){#splash *{animation:none!important}}
 </style>
 </head>
 <body>
+<div id="splash" aria-hidden="true">
+  <div class="ball"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><circle cx="12" cy="12" r="9" fill="#F5F3EA"/><path d="M12 7.3l4.1 3l-1.6 4.8h-5l-1.6 -4.8z" fill="currentColor"/><path d="M12 7.3v-4.2m4.1 7.2l4 -1.3m-5.6 6.1l2.5 3.4m-7.5 -3.4l-2.5 3.4m-1 -8.3l-4 -1.3"/></svg></div>
+  <div class="shadow"></div>
+  <div class="name">百舌鳥<b>FC</b></div>
+  <div class="dots"><i></i><i></i><i></i></div>
+</div>
 <script>
 "use strict";
 // コーチ用ウェブアプリのURL（デプロイ「コーチ用」の /exec。保護者用も同じURL）
 const EXEC = "https://script.google.com/macros/s/AKfycbw6OtUz0_V8m0GPFOxDcXW4wJPEElu6BhcdzCUdAUHnVh8YWm5kNILUFV8xGFXfoXCh/exec";
 
 (function () {
+  const splash = document.getElementById("splash"), t0 = Date.now();
+  // 起動画面を消す（ボールが弾み終わるまで、最低1.7秒は見せる）
+  const hide = () => { setTimeout(() => { splash.classList.add("out"); setTimeout(() => splash.remove(), 500); }, Math.max(0, 1700 - (Date.now() - t0))); };
   const q = new URLSearchParams(location.search);
   // 合言葉は英数字・-・_ だけを通す（それ以外は付け足さない）
   const clean = v => String(v || "").replace(/[^A-Za-z0-9_-]/g, "");
-  const k = clean(q.get("k")), f = clean(q.get("f"));
+  let k = clean(q.get("k")), f = clean(q.get("f"));
+  // ホーム画面のアイコンから開いたときに合言葉が付いていない場合に備え、この端末に最後の専用リンクを覚えておく
+  try {
+    if (k || f) localStorage.setItem("mozu-link", JSON.stringify({ k, f }));
+    else { const m = JSON.parse(localStorage.getItem("mozu-link") || "{}"); k = clean(m.k); f = clean(m.f); }
+  } catch (e) {}
   if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(EXEC) || (!k && !f)) {
+    splash.remove();
     document.body.innerHTML = '<div class="msg"><b>ページを開けませんでした</b>' +
       'お送りした専用リンクから開いてください。<br>うまく開けないときは運営までご連絡ください。</div>';
     return;
   }
+  window.addEventListener("message", e => {
+    if (e.data === "mozu-ready" && (e.origin === "null" || /^https:\/\/([a-z0-9-]+\.)*googleusercontent\.com$/.test(e.origin))) hide();
+  });
+  setTimeout(hide, 15000); // 合図が届かなくても15秒で消す
   const fr = document.createElement("iframe");
   fr.src = EXEC + (f ? "?f=" + encodeURIComponent(f) : "?k=" + encodeURIComponent(k));
   fr.title = f ? "保護者用ページ" : "コーチ用ページ";
